@@ -86,17 +86,23 @@ Player.prototype.handleEvent = function(e) {
   keyMap[35] = 5;
   keyMap[37] = 6;
   keyMap[36] = 7;
+  /* 8-topology, clockwise, starting in top-left - the same as CSS */
 
   var code = e.keyCode;
   /* one of numpad directions? */
-  if (!(code in keyMap)) { return; }
+  if (!(code in keyMap)) {
+    return;
+  }
 
   /* is there a free space? */
   var dir = ROT.DIRS[8][keyMap[code]];
   var newX = this._x + dir[0];
   var newY = this._y + dir[1];
   var newKey = newX + "," + newY;
-  if (!(newKey in Game.map)) { return; }
+  /* Can't move in this direction */
+  if (!(newKey in Game.map)) {
+    return;
+  }
 
   Game.display.draw(this._x, this._y, Game.map[this._x+","+this._y]);
   this._x = newX;
