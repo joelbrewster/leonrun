@@ -10,10 +10,12 @@ Game._generateMap = function() {
   var digger = new ROT.Map.Digger();
 
   var digCallback = function(x, y, value) {
-    if (value) { return; } /* Do not store walls */
+    if (value) {
+      return;
+    } /* Do not store walls */
 
-   var key = x+","+y;
-   this.map[key] = ".";
- };
- digger.create(digCallback.bind(this));
+    var key = x+","+y;
+    this.map[key] = ".";
+  };
+  digger.create(digCallback.bind(this));
 };
