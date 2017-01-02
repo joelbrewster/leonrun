@@ -3,6 +3,7 @@ var Game = {
   map: {},
   engine: null,
   player: null,
+  toys: null,
 
   init: function() {
     this.display = new ROT.Display();
@@ -49,6 +50,10 @@ var Game = {
       var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
       var key = freeCells.splice(index, 1)[0];
       this.map[key] = "*";
+    }
+    if (!i) {
+      this.toys = key;
+      /*first time is a toy*/
     }
   },
 
