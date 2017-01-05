@@ -3,16 +3,18 @@ var Game = {
   map: {},
   engine: null,
   player: null,
+  dad: null,
   toys: null,
 
   init: function() {
-    this.display = new ROT.Display();
+    this.display = new ROT.Display({spacing:1.1});
     document.body.appendChild(this.display.getContainer());
 
     this._generateMap();
 
     var scheduler = new ROT.Scheduler.Simple();
     scheduler.add(this.player, true);
+    scheduler.add(this.dad, true);
 
     this.engine = new ROT.Engine(scheduler);
     this.engine.start();
@@ -23,7 +25,9 @@ var Game = {
     var freeCells = [];
 
     var digCallback = function(x, y, value) {
-      if (value) { return; }
+      if (value) {
+        return;
+      }
 
       var key = x+","+y;
       this.map[key] = ".";
@@ -33,16 +37,18 @@ var Game = {
 
     this._generateBoxes(freeCells);
     this._drawWholeMap();
-    this._createPlayer(freeCells);
+
+    this.player = this._createBeing(Player, freeCells);
+    this.dad = this._createBeing(Dad, freeCells);
   },
 
-  _createPlayer: function(freeCells) {
+  _createBeing: function(what, freeCells) {
     var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
     var key = freeCells.splice(index, 1)[0];
     var parts = key.split(",");
     var x = parseInt(parts[0]);
     var y = parseInt(parts[1]);
-    this.player = new Player(x, y);
+    return new what(x, y);
   },
 
   _generateBoxes: function(freeCells) {
@@ -50,9 +56,9 @@ var Game = {
       var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
       var key = freeCells.splice(index, 1)[0];
       this.map[key] = "*";
-    }
-    if (!i) {
-      this.toys = key;
+      if (!i) {
+        this.toys = key;
+      }
       /*first time is a toy*/
     }
   },
@@ -73,15 +79,28 @@ var Player = function(x, y) {
   this._draw();
 };
 
+Player.prototype.getSpeed = function() {
+  return 100;
+};
+Player.prototype.getX = function() {
+  return this._x;
+};
+Player.prototype.getY = function() {
+  return this._y;
+};
+
 Player.prototype.act = function() {
   Game.engine.lock();
-
-  /* wait for user input; do stuff when user hits a key */
   window.addEventListener("keydown", this);
 };
 
 Player.prototype.handleEvent = function(e) {
-  /* process user input */
+  var code = e.keyCode;
+  if (code == 13 || code == 32) {
+    this._checkBox();
+    return;
+  }
+
   var keyMap = {};
   keyMap[38] = 0;
   keyMap[33] = 1;
@@ -91,9 +110,7 @@ Player.prototype.handleEvent = function(e) {
   keyMap[35] = 5;
   keyMap[37] = 6;
   keyMap[36] = 7;
-  /* 8-topology, clockwise, starting in top-left - the same as CSS */
 
-  var code = e.keyCode;
   /* one of numpad directions? */
   if (!(code in keyMap)) {
     return;
@@ -104,7 +121,6 @@ Player.prototype.handleEvent = function(e) {
   var newX = this._x + dir[0];
   var newY = this._y + dir[1];
   var newKey = newX + "," + newY;
-  /* Can't move in this direction */
   if (!(newKey in Game.map)) {
     return;
   }
@@ -118,8 +134,63 @@ Player.prototype.handleEvent = function(e) {
 };
 
 Player.prototype._draw = function() {
-  Game.display.draw(this._x, this._y, "@", "#f00");
+  Game.display.draw(this._x, this._y, "@", "aqua");
+};
+
+Player.prototype._checkBox = function() {
+  var key = this._x + "," + this._y;
+  if (Game.map[key] != "*") {
+    alert("There is nothing here!");
+  } else if (key == Game.toys) {
+    alert("Hooray! You found your truck! You win!");
+    Game.engine.lock();
+    window.removeEventListener("keydown", this);
+  } else {
+    alert("This toy is not your truck!");
+  }
+};
+
+var Dad = function(x, y) {
+  this._x = x;
+  this._y = y;
+  this._draw();
+};
+
+Dad.prototype.getSpeed = function() {
+  return 100;
+};
+
+Dad.prototype.act = function() {
+  var x = Game.player.getX();
+  var y = Game.player.getY();
+
+  var passableCallback = function(x, y) {
+    return (x+","+y in Game.map);
+  };
+  var astar = new ROT.Path.AStar(x, y, passableCallback, {topology:4});
+
+  var path = [];
+  var pathCallback = function(x, y) {
+  path.push([x, y]);
+};
+astar.compute(this._x, this._y, pathCallback);
+
+path.shift();
+if (path.length <= 1) {
+  alert("Game over - you were captured by Dad! Refresh the page to start again.");
+  Game.engine.lock();
+} else {
+  x = path[0][0];
+  y = path[0][1];
+  Game.display.draw(this._x, this._y, Game.map[this._x+","+this._y]);
+  this._x = x;
+  this._y = y;
+  this._draw();
+  }
+};
+
+Dad.prototype._draw = function() {
+  Game.display.draw(this._x, this._y, "@", "red");
 };
 
 Game.init();
-
