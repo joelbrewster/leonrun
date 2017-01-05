@@ -1,0 +1,31 @@
+body {
+  background: black;
+  color: white;
+  font-family: monospace, monospace;
+  text-shadow: none !important;
+}
+
+h1 {
+  text-align: center;
+}
+
+p {
+  text-align: center;
+}
+
+body {
+  text-align: left;
+}
+
+.aqua {
+  color: aqua;
+}
+
+.red {
+  color: red;
+}
+
+.bold {
+  font-weight: bold;
+  font-size: 1.2em;
+}
