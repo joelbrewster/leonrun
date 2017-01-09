@@ -11,6 +11,5 @@ There's many bugs and it needs a lot of work.
 - I plan to add 'scenes' for the gameplay; start, game over, win.
 
 ```
-![ROT Tutorial](http://www.roguebasin.com/index.php?title=Rot.js_tutorial
-)
+![ROT Tutorial](http://www.roguebasin.com/index.php?title=Rot.js_tutorial)
 ```
